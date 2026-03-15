@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException,status
 from pydantic import BaseModel, Field
 
 app = FastAPI()
@@ -7,8 +7,12 @@ class Post_model(BaseModel):
     title: str = Field(..., max_length=40, min_length=10)
     content: str = Field(..., min_length=40, max_length=10000)
     published: bool = Field(default=True)
-    authore: str  = Field(min_length=2)
+    authore: str  = Field(default=None,min_length=2)
 
+
+class Update_Post_model(BaseModel):
+    title: str = Field(..., max_length=40, min_length=10)
+    content:str= Field(...,max_length=10000, min_length=40 )
 post = {
 1:{
 "title":"Learning FastAPI properly",
@@ -30,20 +34,25 @@ post = {
 }
 }
 
-#acess/read
 
+#read all 
+@app.get("/")
+async def all():
+    return post
+
+
+
+#acess/read
 @app.get("/home/{id}")
 async def read_post(id:int):
     users_post_data = post.get(id)
     if not users_post_data:
-        raise HTTPException(status_code=404)
+        raise HTTPException(status_code=404,detail=f"not found given {id}")
     return users_post_data
 
 
 
 #create
-
-
 @app.post("/create_post")
 async def create_post(post_model: Post_model):
     user_data = post_model.model_dump()
@@ -52,8 +61,40 @@ async def create_post(post_model: Post_model):
     return user_data
 
 
-@app.get("/")
-async def all():
-    return post
 
+#deletion
+@app.delete("/home/{id}")
+async def delete_post(id: int):
+
+    if id not in post:
+        raise HTTPException(status_code=404, detail="Post does not exist")
+
+    deleted_post = post.pop(id)
+
+    return {
+        "message": "Post deleted successfully",
+        "deleted_post": deleted_post["title"]
+    }
+
+
+#Update
+@app.put("/home/{id}")
+async def update(id: int, update_post_model: Update_Post_model):
+    if id not in post:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Post does not exist")
+    
+    
+    existing_post = post[id]
+    updated_data = update_post_model.model_dump()
+    existing_post.update(updated_data)  
+    
+    
+    post[id] = existing_post
+
+    return {
+        "status": "update successfully",
+        "updated": existing_post
+    }
+
+    
 
