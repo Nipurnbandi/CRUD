@@ -1,8 +1,18 @@
-from fastapi import FastAPI, HTTPException,status
+from fastapi import FastAPI, HTTPException,status,Depends
 from pydantic import BaseModel, Field
 import psycopg2
 from psycopg2.extras import RealDictCursor
 import time
+from . import models
+from .database import engine,get_db
+from sqlalchemy.orm import Session
+
+
+#sql alchemy connection
+models.Base.metadata.create_all(bind=engine)
+
+
+
 
 app = FastAPI()
 
@@ -45,6 +55,12 @@ async def all():
     connect.commit()
     return data
 
+
+#test for sqlalchemy
+@app.get("/sqlalchemy")
+async def test_post(db: Session = Depends(get_db)):
+    return {"status":"successful"}
+    
 
 
 #acess/read
