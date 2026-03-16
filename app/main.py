@@ -1,7 +1,23 @@
 from fastapi import FastAPI, HTTPException,status
 from pydantic import BaseModel, Field
+import psycopg2
+from psycopg2.extras import RealDictCursor
+import time
 
 app = FastAPI()
+
+#DB connection  
+while True:
+    try:
+    
+        connect=psycopg2.connect(host='localhost',database='CRUD',user='postgres',password='nipurn',cursor_factory=RealDictCursor)
+        cursor=connect.cursor()
+        print("sucessfully connected to DB")
+        break
+    except Exception as ex:
+        print(ex)
+        time.sleep(4)
+    
 
 class Post_model(BaseModel):
     title: str = Field(..., max_length=40, min_length=10)
@@ -13,6 +29,9 @@ class Post_model(BaseModel):
 class Update_Post_model(BaseModel):
     title: str = Field(..., max_length=40, min_length=10)
     content:str= Field(...,max_length=10000, min_length=40 )
+
+
+
 post = {
 1:{
 "title":"Learning FastAPI properly",
@@ -33,6 +52,8 @@ post = {
 "authore":"Mike"
 }
 }
+
+
 
 
 #read all 
@@ -75,6 +96,7 @@ async def delete_post(id: int):
         "message": "Post deleted successfully",
         "deleted_post": deleted_post["title"]
     }
+
 
 
 #Update
