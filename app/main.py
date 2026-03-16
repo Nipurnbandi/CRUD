@@ -32,26 +32,7 @@ class Update_Post_model(BaseModel):
 
 
 
-post = {
-1:{
-"title":"Learning FastAPI properly",
-"content":"This is a long content explaining how FastAPI works in detail.",
-"published":True,
-"authore":"Alex"
-},
-2:{
-"title":"Understanding APIs in depth",
-"content":"This article explains APIs and how backend systems work.",
-"published":True,
-"authore":"John"
-},
-3:{
-"title":"Backend development basics",
-"content":"Backend development includes databases, APIs and servers.",
-"published":True,
-"authore":"Mike"
-}
-}
+
 
 
 
@@ -59,17 +40,22 @@ post = {
 #read all 
 @app.get("/")
 async def all():
-    return post
+    cursor.execute("""SELECT * FROM post""")
+    data=cursor.fetchall()
+    connect.commit()
+    return data
 
 
 
 #acess/read
 @app.get("/home/{id}")
 async def read_post(id:int):
-    users_post_data = post.get(id)
-    if not users_post_data:
+    cursor.execute("""SELECT * FROM post WHERE id=%s""",(id,))
+    data=cursor.fetchone()
+    connect.commit()
+    if not data:
         raise HTTPException(status_code=404,detail=f"not found given {id}")
-    return users_post_data
+    return data
 
 
 
@@ -77,24 +63,33 @@ async def read_post(id:int):
 @app.post("/create_post")
 async def create_post(post_model: Post_model):
     user_data = post_model.model_dump()
-    post_id = len(post)+1
-    post[post_id]=user_data
-    return user_data
-
+    cursor.execute("""INSERT INTO post (title,content,authore,published) 
+                   VALUES(%s,%s,%s,%s) RETURNING *""",(user_data["title"],user_data["content"],user_data["authore"],user_data["published"]))
+    data=cursor.fetchone()
+    connect.commit()
+    
+    
+    return data
 
 
 #deletion
 @app.delete("/home/{id}")
 async def delete_post(id: int):
 
-    if id not in post:
-        raise HTTPException(status_code=404, detail="Post does not exist")
+    cursor.execute(
+        "DELETE FROM post WHERE id=%s RETURNING *",
+        (id,)
+    )
 
-    deleted_post = post.pop(id)
+    deleted_post = cursor.fetchone()
+    connect.commit()
+
+    if not deleted_post:
+        raise HTTPException(status_code=404, detail="Post does not exist")
 
     return {
         "message": "Post deleted successfully",
-        "deleted_post": deleted_post["title"]
+        "deleted_post": deleted_post
     }
 
 
@@ -102,20 +97,20 @@ async def delete_post(id: int):
 #Update
 @app.put("/home/{id}")
 async def update(id: int, update_post_model: Update_Post_model):
-    if id not in post:
+    cursor.execute("""UPDATE post 
+                   SET title=%s,content=%s
+                   WHERE id=%s
+                   RETURNING *""",(update_post_model.title,update_post_model.content,id))
+    data=cursor.fetchone()
+    connect.commit()
+    if not data:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Post does not exist")
     
     
-    existing_post = post[id]
-    updated_data = update_post_model.model_dump()
-    existing_post.update(updated_data)  
-    
-    
-    post[id] = existing_post
 
     return {
         "status": "update successfully",
-        "updated": existing_post
+        "updated": data
     }
 
     
