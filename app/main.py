@@ -48,27 +48,27 @@ class Update_Post_model(BaseModel):
 
 
 #read all 
-@app.get("/")
-async def all():
-    cursor.execute("""SELECT * FROM post""")
-    data=cursor.fetchall()
+@app.get("/posts")
+async def all(db: Session = Depends(get_db)):
+    #cursor.execute("""SELECT * FROM post""")
+    #data=cursor.fetchall()
+
+    data=db.query(models.Post).all()
     connect.commit()
     return data
 
 
-#test for sqlalchemy
-@app.get("/sqlalchemy")
-async def test_post(db: Session = Depends(get_db)):
-    return {"status":"successful"}
     
 
 
 #acess/read
 @app.get("/home/{id}")
-async def read_post(id:int):
-    cursor.execute("""SELECT * FROM post WHERE id=%s""",(id,))
-    data=cursor.fetchone()
-    connect.commit()
+async def read_post(id:int,db: Session = Depends(get_db)):
+    #cursor.execute("""SELECT * FROM post WHERE id=%s""",(id,))
+    #data=cursor.fetchone()
+    #connect.commit()
+
+    data=db.query(models.Post).filter(models.Post.id==id).first()
     if not data:
         raise HTTPException(status_code=404,detail=f"not found given {id}")
     return data
@@ -77,31 +77,42 @@ async def read_post(id:int):
 
 #create
 @app.post("/create_post")
-async def create_post(post_model: Post_model):
-    user_data = post_model.model_dump()
-    cursor.execute("""INSERT INTO post (title,content,authore,published) 
-                   VALUES(%s,%s,%s,%s) RETURNING *""",(user_data["title"],user_data["content"],user_data["authore"],user_data["published"]))
-    data=cursor.fetchone()
-    connect.commit()
-    
-    
+async def create_post(post_model: Post_model,db:Session=Depends(get_db)):
+
+    #user_data = post_model.model_dump()
+    #cursor.execute("""INSERT INTO post (title,content,authore,published) 
+    #               VALUES(%s,%s,%s,%s) RETURNING *""",(user_data["title"],user_data["content"],user_data["authore"],user_data["published"]))
+    #data=cursor.fetchone()
+    #connect.commit()
+
+
+
+    data=models.Post(title=post_model.title,content=post_model.content,authore=post_model.authore,published=post_model.published)
+    db.add(data)       
+    db.commit()            
+    db.refresh(data)
     return data
 
 
 #deletion
 @app.delete("/home/{id}")
-async def delete_post(id: int):
+async def delete_post(id: int,db:Session=Depends(get_db)):
 
-    cursor.execute(
-        "DELETE FROM post WHERE id=%s RETURNING *",
-        (id,)
-    )
+    #cursor.execute(
+    #    "DELETE FROM post WHERE id=%s RETURNING *",
+    #    (id,)
+    #)
+    #deleted_post = cursor.fetchone()
+    #connect.commit()
 
-    deleted_post = cursor.fetchone()
-    connect.commit()
+    deleted_post=db.query(models.Post).filter(models.Post.id==id)
 
-    if not deleted_post:
+    if not deleted_post.first():
         raise HTTPException(status_code=404, detail="Post does not exist")
+    
+    deleted_post.delete(synchronize_session=False)
+    db.commit()
+    
 
     return {
         "message": "Post deleted successfully",
