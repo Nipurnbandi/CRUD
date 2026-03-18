@@ -1,5 +1,5 @@
 
-from pydantic import BaseModel,Field
+from pydantic import BaseModel,Field,EmailStr
 from datetime import datetime
 
 #### Request model #########Data from user->DB 
@@ -18,6 +18,14 @@ class Post_create(Post_Base):
 class Post_update(BaseModel):
     title: str = Field(..., max_length=40, min_length=10)
     content:str= Field(...,max_length=10000, min_length=40 )
+
+
+
+
+class Post_users(BaseModel):
+    
+    email:EmailStr
+    password:str
 
 
 
@@ -46,3 +54,15 @@ class Response_update(BaseModel):
 
     class Config:
         orm_mode=True
+
+
+
+
+
+class UserResponse(BaseModel):
+    
+    email: EmailStr
+    created_at: datetime
+
+    class Config:
+        from_attributes = True  # allows ORM object conversion
