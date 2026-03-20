@@ -25,9 +25,11 @@ class Post_update(BaseModel):
 class Post_users(BaseModel):
     
     email:EmailStr
-    password:str
+    password:str= Field(min_length=8, max_length=64)
 
-
+class Login_details(BaseModel):
+    email:EmailStr
+    password:str=Field(min_length=8, max_length=64)
 
 #### Response Model ######Data from server->browser
 
@@ -65,4 +67,4 @@ class UserResponse(BaseModel):
     created_at: datetime
 
     class Config:
-        from_attributes = True  # allows ORM object conversion
+        from_attributes = True  
