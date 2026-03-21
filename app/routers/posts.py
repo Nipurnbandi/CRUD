@@ -11,6 +11,8 @@ router=APIRouter(
 )
 
 
+
+
 #read all 
 @router.get("",response_model=List[schemas.Response_read])
 async def all(db: Session = Depends(get_db)):
