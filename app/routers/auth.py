@@ -13,10 +13,10 @@ async def user_login(login_details:OAuth2PasswordRequestForm=Depends(),db:Sessio
     data=db.query(models.Users).filter(models.Users.email==login_details.username).first()
 
     if not data:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,detail="credential not found")
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,detail="credential not found")
 
     if not login_details.password==data.password:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,detail="credential not found")
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,detail="credential not found")
     access_token=oauth2.create_access_token(data={"user_id":data.id})
 
     return {

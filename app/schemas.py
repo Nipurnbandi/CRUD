@@ -1,6 +1,7 @@
 
 from pydantic import BaseModel,Field,EmailStr
 from datetime import datetime
+from typing import Optional
 
 #### Request model #########Data from user->DB 
 class Post_Base(BaseModel):
@@ -30,6 +31,13 @@ class Post_users(BaseModel):
 class Login_details(BaseModel):
     email:EmailStr
     password:str=Field(min_length=8, max_length=64)
+
+class Token(BaseModel):
+    access_token:str
+    token_typ:str
+
+class Token_data(BaseModel):
+    id:Optional[int]
 
 #### Response Model ######Data from server->browser
 

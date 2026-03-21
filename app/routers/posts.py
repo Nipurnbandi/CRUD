@@ -1,4 +1,4 @@
-from .. import models,schemas
+from .. import models,schemas,oauth2
 from ..database import get_db
 from sqlalchemy.orm import Session
 from typing import List
@@ -37,7 +37,7 @@ async def read_post(id:int,db: Session = Depends(get_db)):
 
 #create
 @router.post("",response_model=schemas.Response_create)
-async def create_post(post_create: schemas.Post_create,db:Session=Depends(get_db)):
+async def create_post(post_create: schemas.Post_create,db:Session=Depends(get_db),user_id:int=Depends(oauth2.current_user)):
     data=models.Post(title=post_create.title,content=post_create.content,authore=post_create.authore,published=post_create.published)
     db.add(data)       
     db.commit()            
@@ -50,7 +50,7 @@ async def create_post(post_create: schemas.Post_create,db:Session=Depends(get_db
 
 #deletion
 @router.delete("/{id}")
-async def delete_post(id: int,db:Session=Depends(get_db)):
+async def delete_post(id: int,db:Session=Depends(get_db),user_id:int=Depends(oauth2.current_user)):
     deleted_post=db.query(models.Post).filter(models.Post.id==id)
     if not deleted_post.first():
         raise HTTPException(status_code=404, detail="Post does not exist")
@@ -67,7 +67,7 @@ async def delete_post(id: int,db:Session=Depends(get_db)):
 
 #Update
 @router.put("/{id}",response_model=schemas.Response_update)
-async def update(id: int, post_update: schemas.Post_update,db:Session=Depends(get_db)):
+async def update(id: int, post_update: schemas.Post_update,db:Session=Depends(get_db),user_id:int=Depends(oauth2.current_user)):
     post_querry=db.query(models.Post).filter(models.Post.id==id)
 
 
