@@ -9,6 +9,7 @@ class Post_Base(BaseModel):
     content: str = Field(..., min_length=40, max_length=10000)
     published: bool = Field(default=True)
     authore: str  = Field(default=None,min_length=2)
+    
 
 class Post_create(Post_Base):
     pass
@@ -44,6 +45,7 @@ class Token_data(BaseModel):
 class Response_read(BaseModel):
     title: str
     content: str
+    user_id:int
 
 class Response_create(BaseModel):
     title: str 

@@ -20,6 +20,6 @@ async def user_login(login_details:OAuth2PasswordRequestForm=Depends(),db:Sessio
     access_token=oauth2.create_access_token(data={"user_id":data.id})
 
     return {
-        "acess_token":access_token,
+        "access_token":access_token,
         "token_type":"bearer"
     }

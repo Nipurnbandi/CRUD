@@ -36,44 +36,82 @@ async def read_post(id:int,db: Session = Depends(get_db)):
 
 
 #create
-@router.post("",response_model=schemas.Response_create)
-async def create_post(post_create: schemas.Post_create,db:Session=Depends(get_db),user_id:int=Depends(oauth2.current_user)):
-    data=models.Post(title=post_create.title,content=post_create.content,authore=post_create.authore,published=post_create.published)
-    db.add(data)       
-    db.commit()            
+@router.post("", response_model=schemas.Response_create)
+async def create_post(
+    post_create: schemas.Post_create,
+    db: Session = Depends(get_db),
+    current_user = Depends(oauth2.current_user)
+):
+    data = models.Post(
+        title=post_create.title,
+        content=post_create.content,
+        authore=post_create.authore,
+        published=post_create.published,
+        user_id=current_user.id
+    )
+    db.add(data)
+    db.commit()
     db.refresh(data)
     return data
 
 
 
-
-
 #deletion
 @router.delete("/{id}")
-async def delete_post(id: int,db:Session=Depends(get_db),user_id:int=Depends(oauth2.current_user)):
-    deleted_post=db.query(models.Post).filter(models.Post.id==id)
-    if not deleted_post.first():
-        raise HTTPException(status_code=404, detail="Post does not exist")
-    deleted_post.delete(synchronize_session=False)
-    db.commit()
-    return {
-        "message": "Post deleted successfully",
-        "deleted_post": deleted_post.first()
-    }
+async def delete_post(
+    id: int,
+    db: Session = Depends(get_db),
+    current_user = Depends(oauth2.current_user)
+):
+    post_query = db.query(models.Post).filter(models.Post.id == id)
+    post = post_query.first()
 
+    if not post:
+        raise HTTPException(status_code=404, detail="Post does not exist")
+
+    
+    if post.user_id != current_user.id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Not allowed to delete this post"
+        )
+
+    post_query.delete(synchronize_session=False)
+    db.commit()
+
+    return {"message": "Post deleted successfully"}
 
 
 
 
 #Update
-@router.put("/{id}",response_model=schemas.Response_update)
-async def update(id: int, post_update: schemas.Post_update,db:Session=Depends(get_db),user_id:int=Depends(oauth2.current_user)):
-    post_querry=db.query(models.Post).filter(models.Post.id==id)
+@router.put("/{id}", response_model=schemas.Response_update)
+async def update(
+    id: int,
+    post_update: schemas.Post_update,
+    db: Session = Depends(get_db),
+    user_id: int = Depends(oauth2.current_user)
+):
+    post_query = db.query(models.Post).filter(models.Post.id == id)
+    post = post_query.first()
 
+    # Check if post exists
+    if not post:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Post does not exist"
+        )
 
-    if not  post_querry.first():
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Post does not exist")
-    
-    post_querry.update(post_update.model_dump(),synchronize_session=False)
+    # Authorization check
+    if post.user_id != user_id.id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Not allowed to update this post"
+        )
+
+    # Update
+    post_query.update(post_update.model_dump(), synchronize_session=False)
     db.commit()
-    return post_querry.first()
+
+    # Return updated post
+    return post_query.first()
