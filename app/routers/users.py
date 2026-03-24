@@ -1,4 +1,4 @@
-from .. import models,schemas
+from .. import models,schemas,utils
 from ..database import get_db
 from sqlalchemy.orm import Session
 from typing import List
@@ -9,16 +9,34 @@ router=APIRouter(
     tags=["Users"]
 )
 
-#login users
-@router.post("",status_code=status.HTTP_201_CREATED,response_model=schemas.UserResponse)
-async def create_user(post_users:schemas.Post_users,db:Session=Depends(get_db)):
-    new_user = models.Users(email=post_users.email,password=post_users.password)
+#register
+@router.post("", status_code=status.HTTP_201_CREATED, response_model=schemas.UserResponse)
+async def create_user(post_users: schemas.Post_users, db: Session = Depends(get_db)):
+
+    # Check if user already exists
+    existing_user = db.query(models.Users).filter(models.Users.email == post_users.email).first()
+
+    if existing_user:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Email already registered"
+        )
+
+
+    #hashing of password
+    hashed_password=utils.hash(post_users.password)
+
+    # Create new user
+    new_user = models.Users(
+        email=post_users.email,
+        password=hashed_password
+    )
+
     db.add(new_user)
     db.commit()
     db.refresh(new_user)
+
     return new_user
-
-
 
 
 #users details

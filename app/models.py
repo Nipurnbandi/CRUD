@@ -9,6 +9,7 @@ from typing import Optional
 
 
 
+
 class Post(Base):
     __tablename__="post"
     id=Column(Integer,primary_key=True,nullable=False)

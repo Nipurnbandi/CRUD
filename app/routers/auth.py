@@ -1,7 +1,7 @@
 from fastapi import  HTTPException,status,Depends,APIRouter
 from fastapi.security.oauth2 import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
-from .. import models,schemas,oauth2
+from .. import models,schemas,oauth2,utils
 from ..database import get_db
 
 router=APIRouter(
@@ -14,8 +14,8 @@ async def user_login(login_details:OAuth2PasswordRequestForm=Depends(),db:Sessio
 
     if not data:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,detail="credential not found")
-
-    if not login_details.password==data.password:
+    
+    if not utils.verify(login_details.password,data.password):
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,detail="credential not found")
     access_token=oauth2.create_access_token(data={"user_id":data.id})
 

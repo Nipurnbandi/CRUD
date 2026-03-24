@@ -13,6 +13,7 @@ router=APIRouter(
 
 
 
+
 #read all 
 @router.get("",response_model=List[schemas.Response_read])
 async def all(db: Session = Depends(get_db)):
@@ -56,6 +57,8 @@ async def create_post(
 
 
 
+
+
 #deletion
 @router.delete("/{id}")
 async def delete_post(
@@ -80,6 +83,7 @@ async def delete_post(
     db.commit()
 
     return {"message": "Post deleted successfully"}
+
 
 
 
@@ -109,9 +113,9 @@ async def update(
             detail="Not allowed to update this post"
         )
 
-    # Update
+    
     post_query.update(post_update.model_dump(), synchronize_session=False)
     db.commit()
 
-    # Return updated post
+    
     return post_query.first()
