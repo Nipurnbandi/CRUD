@@ -30,6 +30,7 @@ async def read_post(id:int,db: Session = Depends(get_db)):
     data=db.query(models.Post).filter(models.Post.id==id).first()
     if not data:
         raise HTTPException(status_code=404,detail=f"not found given {id}")
+    
     return data
 
 

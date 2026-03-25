@@ -32,3 +32,37 @@ async def vote(
     db.commit()
 
     return {"response": "liked"}
+
+
+
+
+
+@router.delete("/vote/{post_id}")
+async def vote(
+    post_id: int,
+    db: Session = Depends(get_db),
+    current_user = Depends(oauth2.current_user)
+):
+    # check if already liked
+    existing_vote = db.query(models.Votes).filter(
+        models.Votes.post_id == post_id,
+        models.Votes.user_id == current_user.id
+    ).first()
+
+    if not existing_vote:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail="already unliked")
+
+
+    db.delete(existing_vote)
+    db.commit()
+    return {"response": "unliked"}
+
+
+
+    
+
+
+
+
+
+    
