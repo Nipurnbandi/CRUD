@@ -1,12 +1,15 @@
-from fastapi import  HTTPException,status,Depends,APIRouter
+from fastapi import  HTTPException,Depends,APIRouter
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
-from .. import models,schemas,oauth2
+from .. import models,oauth2
 from ..database import get_db
 
-router=APIRouter()
+router=APIRouter(
+    prefix="/vote",
+    tags=["vote"]
+)
 
-@router.post("/vote/{post_id}")
+@router.post("/{post_id}")
 async def vote(
     post_id: int,
     db: Session = Depends(get_db),
@@ -22,7 +25,7 @@ async def vote(
     )
 
     try:
-        # ✅ Try to LIKE
+        
         db.add(new_vote)
         db.commit()
         return {"data": "liked"}
@@ -30,7 +33,7 @@ async def vote(
     except IntegrityError:
         db.rollback()
 
-        # ❌ Already exists → UNLIKE
+        
         db.query(models.Votes).filter(
             models.Votes.post_id == post_id,
             models.Votes.user_id == current_user.id

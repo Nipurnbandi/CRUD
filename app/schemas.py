@@ -45,7 +45,10 @@ class Token_data(BaseModel):
 class Response_read(BaseModel):
     title: str
     content: str
-    user_id:int
+    
+class PostWithVotes(BaseModel):
+    post: Response_read
+    votes: int
 
 class Response_create(BaseModel):
     title: str 

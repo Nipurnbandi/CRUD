@@ -25,13 +25,18 @@ async def all(db: Session = Depends(get_db)):
 
 
 #acess/read
-@router.get("/{id}",status_code=status.HTTP_201_CREATED,response_model=schemas.Response_read)
+@router.get("/{id}",status_code=status.HTTP_201_CREATED,response_model=schemas.PostWithVotes)
 async def read_post(id:int,db: Session = Depends(get_db)):
     data=db.query(models.Post).filter(models.Post.id==id).first()
+    no_votes=db.query(models.Votes).filter(models.Votes.post_id==id).count()
+    
     if not data:
         raise HTTPException(status_code=404,detail=f"not found given {id}")
     
-    return data
+    return {
+        "post":data,
+        "votes":no_votes
+    }
 
 
 
