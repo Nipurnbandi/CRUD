@@ -1,5 +1,6 @@
 from fastapi import  HTTPException,status,Depends,APIRouter
 from sqlalchemy.orm import Session
+from sqlalchemy.exc import IntegrityError
 from .. import models,schemas,oauth2
 from ..database import get_db
 
@@ -11,51 +12,43 @@ async def vote(
     db: Session = Depends(get_db),
     current_user = Depends(oauth2.current_user)
 ):
-    # check if already liked
-    existing_vote = db.query(models.Votes).filter(
-        models.Votes.post_id == post_id,
-        models.Votes.user_id == current_user.id
-    ).first()
-
-    if existing_vote:
-        raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT,
-            detail="You have already liked this post"
-        )
+    post = db.query(models.Post).filter(models.Post.id == post_id).first()
+    if not post:
+        raise HTTPException(status_code=404, detail="Post not found")
 
     new_vote = models.Votes(
-        user_id=current_user.id,
-        post_id=post_id
+        post_id=post_id,
+        user_id=current_user.id
     )
 
-    db.add(new_vote)
-    db.commit()
+    try:
+        # ✅ Try to LIKE
+        db.add(new_vote)
+        db.commit()
+        return {"data": "liked"}
 
-    return {"response": "liked"}
+    except IntegrityError:
+        db.rollback()
 
+        # ❌ Already exists → UNLIKE
+        db.query(models.Votes).filter(
+            models.Votes.post_id == post_id,
+            models.Votes.user_id == current_user.id
+        ).delete(synchronize_session=False)
 
-
-
-
-@router.delete("/vote/{post_id}")
-async def vote(
-    post_id: int,
-    db: Session = Depends(get_db),
-    current_user = Depends(oauth2.current_user)
-):
-    # check if already liked
-    existing_vote = db.query(models.Votes).filter(
-        models.Votes.post_id == post_id,
-        models.Votes.user_id == current_user.id
-    ).first()
-
-    if not existing_vote:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail="already unliked")
+        db.commit()
+        return {"data": "unliked"}
 
 
-    db.delete(existing_vote)
-    db.commit()
-    return {"response": "unliked"}
+
+
+    
+
+
+
+
+
+
 
 
 
