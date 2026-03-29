@@ -1,6 +1,7 @@
 from .. import models,schemas,oauth2
 from ..database import get_db
 from sqlalchemy.orm import Session
+from sqlalchemy import func
 from typing import List
 from fastapi import  HTTPException,status,Depends,APIRouter
 
@@ -25,17 +26,25 @@ async def all(db: Session = Depends(get_db)):
 
 
 #acess/read
-@router.get("/{id}",status_code=status.HTTP_201_CREATED,response_model=schemas.PostWithVotes)
-async def read_post(id:int,db: Session = Depends(get_db)):
-    data=db.query(models.Post).filter(models.Post.id==id).first()
-    no_votes=db.query(models.Votes).filter(models.Votes.post_id==id).count()
-    
+@router.get("/{id}", response_model=schemas.PostWithVotes)
+def read_post(id: int, db: Session = Depends(get_db)):
+    data = db.query(
+        models.Post,
+        func.count(models.Votes.post_id).label("votes")
+    ).outerjoin(
+        models.Votes, models.Votes.post_id == models.Post.id
+    ).group_by(
+        models.Post.id
+    ).filter(
+        models.Post.id == id
+    ).first()
+
     if not data:
-        raise HTTPException(status_code=404,detail=f"not found given {id}")
-    
+        raise HTTPException(status_code=404, detail="Post not found")
+
     return {
-        "post":data,
-        "votes":no_votes
+        "post": data[0],  
+        "votes": data[1]
     }
 
 
