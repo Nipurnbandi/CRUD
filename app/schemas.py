@@ -2,6 +2,7 @@
 from pydantic import BaseModel,Field,EmailStr
 from datetime import datetime
 from typing import Optional
+from typing import List
 
 #### Request model #########Data from user->DB 
 class Post_Base(BaseModel):
@@ -40,15 +41,39 @@ class Token(BaseModel):
 class Token_data(BaseModel):
     id:Optional[int]
 
+class Request_comment(BaseModel):
+    content:str
+
 #### Response Model ######Data from server->browser
 
 class Response_read(BaseModel):
     title: str
     content: str
-    
+
+class CommentResponse(BaseModel):
+    content: str
+    created_at: datetime
+
+
+
+
+    model_config = {
+        "from_attributes": True
+    }
+
 class PostWithVotes(BaseModel):
     post: Response_read
     votes: int
+    comment:List[CommentResponse]
+
+class CommentResponse(BaseModel):
+    content: str
+    created_at: datetime
+
+
+    model_config = {
+        "from_attributes": True
+    }
 
 class Response_create(BaseModel):
     title: str 
@@ -81,3 +106,18 @@ class UserResponse(BaseModel):
 
     class Config:
         from_attributes = True  
+
+class CommentResponse(BaseModel):
+    content: str
+    created_at: datetime
+
+    model_config = {
+        "from_attributes": True
+    }
+
+class Response_comment(BaseModel):
+    content:str
+    created_at:datetime
+
+    class Config:
+        orm_mode=True

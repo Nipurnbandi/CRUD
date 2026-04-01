@@ -5,14 +5,10 @@ from sqlalchemy import func
 from typing import List
 from fastapi import  HTTPException,status,Depends,APIRouter
 
-
 router=APIRouter(
     prefix="/posts",
     tags=["Posts"]
 )
-
-
-
 
 
 #read all 
@@ -20,9 +16,6 @@ router=APIRouter(
 async def all(db: Session = Depends(get_db)):
     data=db.query(models.Post).all()
     return data
-
-
-    
 
 
 #acess/read
@@ -39,16 +32,16 @@ def read_post(id: int, db: Session = Depends(get_db)):
         models.Post.id == id
     ).first()
 
+    all_comment=db.query(models.Comment).filter(models.Comment.post_id==id).all()
+
     if not data:
         raise HTTPException(status_code=404, detail="Post not found")
 
     return {
         "post": data[0],  
-        "votes": data[1]
+        "votes": data[1],
+        "comment":all_comment
     }
-
-
-
 
 
 #create
@@ -69,9 +62,6 @@ async def create_post(
     db.commit()
     db.refresh(data)
     return data
-
-
-
 
 
 #deletion
@@ -100,9 +90,6 @@ async def delete_post(
     return {"message": "Post deleted successfully"}
 
 
-
-
-
 #Update
 @router.put("/{id}", response_model=schemas.Response_update)
 async def update(
@@ -110,7 +97,7 @@ async def update(
     post_update: schemas.Post_update,
     db: Session = Depends(get_db),
     user_id: int = Depends(oauth2.current_user)
-):
+    ):
     post_query = db.query(models.Post).filter(models.Post.id == id)
     post = post_query.first()
 
@@ -128,9 +115,7 @@ async def update(
             detail="Not allowed to update this post"
         )
 
-    
     post_query.update(post_update.model_dump(), synchronize_session=False)
     db.commit()
 
-    
     return post_query.first()

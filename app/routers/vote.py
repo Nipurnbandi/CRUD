@@ -9,8 +9,6 @@ router=APIRouter(
     tags=["vote"]
 )
 
-
-
 @router.post("/{post_id}")
 async def vote(
     post_id: int,
