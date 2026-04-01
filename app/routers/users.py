@@ -39,6 +39,8 @@ async def create_user(post_users: schemas.Post_users, db: Session = Depends(get_
     return new_user
 
 
+
+
 #users details
 @router.get("/{id}",response_model=schemas.UserResponse)
 async def users_details(id:int,db:Session=Depends(get_db)):

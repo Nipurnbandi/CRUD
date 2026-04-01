@@ -6,7 +6,7 @@ from ..database import get_db
 
 router=APIRouter(
     tags=["authentication"]
-)
+) 
 
 @router.post("/login")
 async def user_login(login_details:OAuth2PasswordRequestForm=Depends(),db:Session=Depends(get_db)):
