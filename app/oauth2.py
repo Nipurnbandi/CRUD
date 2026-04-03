@@ -1,4 +1,4 @@
-from jose import jwt,JWTError,ExpiredSignatureError 
+from jose import jwt,JWTError,ExpiredSignatureError,InvalidTokenError 
 import datetime 
 from . import schemas
 from fastapi import Depends,HTTPException,status
@@ -13,6 +13,8 @@ SECRET_KEY = config.settings.secret_key
 ALGORITHM = config.settings.algorithm
 ACCESS_TOKEN_EXPIRE_MINUTES = config.settings.access_token_expire_minutes
 
+expired_tokens=set()
+
 def create_access_token(data:dict):
     to_encode=data.copy()
     expire=datetime.datetime.utcnow()+datetime.timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
@@ -26,7 +28,7 @@ def verify_access_token(token:str,credential_exception):
         payload=jwt.decode(token,SECRET_KEY,algorithms=[ALGORITHM])
         id=payload.get("user_id")
 
-        if not id:
+        if not id or token in expired_tokens:
             raise credential_exception
     
         token_data=schemas.Token_data(id=id)
@@ -62,3 +64,38 @@ def current_user(
         raise credential_exception
 
     return user 
+
+
+def expire_token(token: str = Depends(oauth_schema)):
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+    
+    except ExpiredSignatureError:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Token already expired",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    
+    except InvalidTokenError:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid token",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
+    
+    expired_tokens.add(token)
+
+
+
+
+
+
+
+
+
+
+
+
+    
