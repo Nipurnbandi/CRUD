@@ -3,6 +3,7 @@ from fastapi.security.oauth2 import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 from .. import models,schemas,oauth2,utils
 from ..database import get_db
+from ..oauth2 import expire_token
 
 router=APIRouter(
     tags=["authentication"]
@@ -23,3 +24,8 @@ async def user_login(login_details:OAuth2PasswordRequestForm=Depends(),db:Sessio
         "access_token":access_token,
         "token_type":"bearer"
     }
+
+
+@router.post("/logout")
+async def logout(result = Depends(oauth2.expire_token)):
+    return result

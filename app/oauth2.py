@@ -1,4 +1,4 @@
-from jose import jwt,JWTError,ExpiredSignatureError,InvalidTokenError 
+from jose import jwt,JWTError,ExpiredSignatureError
 import datetime 
 from . import schemas
 from fastapi import Depends,HTTPException,status
@@ -23,27 +23,29 @@ def create_access_token(data:dict):
     return encoded_jwt
 
 
-def verify_access_token(token:str,credential_exception):
+def verify_access_token(token: str, credential_exception):
     try:
-        payload=jwt.decode(token,SECRET_KEY,algorithms=[ALGORITHM])
-        id=payload.get("user_id")
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        user_id = payload.get("user_id")
 
-        if not id or token in expired_tokens:
+        
+        if user_id is None or token in expired_tokens:
             raise credential_exception
-    
-        token_data=schemas.Token_data(id=id)
 
-    except ExpiredSignatureError:          
+        token_data = schemas.Token_data(id=user_id)
+
+    except ExpiredSignatureError:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="token has expired, please login again",
             headers={"WWW-Authenticate": "Bearer"},
         )
 
-    except JWTError :
+    except JWTError:
         raise credential_exception
-    
+
     return token_data
+
 
 
 def current_user(
@@ -68,16 +70,16 @@ def current_user(
 
 def expire_token(token: str = Depends(oauth_schema)):
     try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-    
+        jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+
     except ExpiredSignatureError:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Token already expired",
             headers={"WWW-Authenticate": "Bearer"},
         )
-    
-    except InvalidTokenError:
+
+    except  JWTError:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid token",
@@ -86,6 +88,24 @@ def expire_token(token: str = Depends(oauth_schema)):
 
     
     expired_tokens.add(token)
+
+    return {"message": "Logged out successfully"}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
