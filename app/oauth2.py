@@ -68,7 +68,7 @@ def current_user(
     return user 
 
 
-def expire_token(token: str = Depends(oauth_schema)):
+def expire_token(token: str = Depends(oauth_schema),current_user=Depends(current_user)):
     try:
         jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
 

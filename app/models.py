@@ -1,5 +1,5 @@
 from .database import Base
-from sqlalchemy import Column,Integer,String,Boolean,ForeignKey
+from sqlalchemy import Column,Integer,String,Boolean,ForeignKey,DateTime
 from sqlalchemy.sql.sqltypes import TIMESTAMP
 from sqlalchemy.sql.expression import text
 from typing import Optional
@@ -28,6 +28,7 @@ class Votes(Base):
     user_id=Column(Integer,ForeignKey("users.id",ondelete="CASCADE"),primary_key=True,nullable=False)
     post_id=Column(Integer,ForeignKey("post.id",ondelete="CASCADE"),primary_key=True,nullable=False,)
 
+
 class Comment(Base):
     __tablename__="comment"
     id=Column(Integer,primary_key=True,nullable=False)
@@ -35,3 +36,20 @@ class Comment(Base):
     user_id=Column(Integer,ForeignKey("users.id",ondelete="CASCADE"),nullable=False)
     content=Column(String,nullable=False)
     created_at=Column(TIMESTAMP,server_default=text('now()'),nullable=False)
+
+
+class Followers(Base):
+    __tablename__="followers"
+    current_user_id=Column(Integer,primary_key=True,nullable=False)
+    follower_id=Column(Integer,ForeignKey("users.id",ondelete="CASCADE"),primary_key=True,nullable=False)
+    created_at=Column(TIMESTAMP,server_default=text('now()'),nullable=False)
+
+
+class PasswordResetToken(Base):
+    __tablename__ = "password_reset_tokens"
+
+    id = Column(Integer, primary_key=True)
+    email = Column(String, index=True)
+    token = Column(String, unique=True)
+    expires_at = Column(DateTime(timezone=True))
+    
