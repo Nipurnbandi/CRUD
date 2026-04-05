@@ -4,6 +4,7 @@ import aiosmtplib
 from .config import settings
 
 
+
 async def send_email(
     to_mail: str,
     subject: str,
@@ -54,10 +55,10 @@ Your Team
 import secrets
 from datetime import datetime, timedelta
 
-async def create_token():
+def create_token():
     return secrets.token_urlsafe(32)
 
-async def expire_time():
+def expire_time():
     expiry = datetime.utcnow() + timedelta(minutes=15)
     return  expiry
     

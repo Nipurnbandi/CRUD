@@ -121,3 +121,14 @@ class Response_comment(BaseModel):
 
     class Config:
         orm_mode=True
+
+class ForgetPassword(BaseModel):
+    email:EmailStr
+
+
+class ResetPassword(BaseModel):
+    email:EmailStr
+    token:str
+    new_password:str
+
+

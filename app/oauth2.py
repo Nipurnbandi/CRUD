@@ -27,7 +27,7 @@ def verify_access_token(token: str, credential_exception):
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         user_id = payload.get("user_id")
-
+                    
         
         if user_id is None or token in expired_tokens:
             raise credential_exception
@@ -45,7 +45,6 @@ def verify_access_token(token: str, credential_exception):
         raise credential_exception
 
     return token_data
-
 
 
 def current_user(
@@ -86,7 +85,6 @@ def expire_token(token: str = Depends(oauth_schema),current_user=Depends(current
             headers={"WWW-Authenticate": "Bearer"},
         )
 
-    
     expired_tokens.add(token)
 
     return {"message": "Logged out successfully"}
