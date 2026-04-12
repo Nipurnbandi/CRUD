@@ -33,8 +33,3 @@ app.include_router(comment.router)
 app.include_router(follow.router)
 app.include_router(reset_password.router)
 
-
-
-
-
-

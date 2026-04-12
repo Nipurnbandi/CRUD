@@ -7,6 +7,7 @@ from sqlalchemy.orm import Session
 from .database import get_db
 from . import models
 from . import config
+
 oauth_schema=OAuth2PasswordBearer(tokenUrl="login")
 
 SECRET_KEY = config.settings.secret_key
@@ -28,7 +29,6 @@ def verify_access_token(token: str, credential_exception):
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         user_id = payload.get("user_id")
                     
-        
         if user_id is None or token in expired_tokens:
             raise credential_exception
 

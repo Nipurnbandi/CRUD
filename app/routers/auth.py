@@ -16,6 +16,9 @@ async def user_login(login_details:OAuth2PasswordRequestForm=Depends(),db:Sessio
     if not data:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,detail="credential not found")
     
+    if data.verified==False:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,detail="email not verified")
+    
     if not utils.verify(login_details.password,data.password):
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,detail="credential not found")
     access_token=oauth2.create_access_token(data={"user_id":data.id})
@@ -29,3 +32,6 @@ async def user_login(login_details:OAuth2PasswordRequestForm=Depends(),db:Sessio
 @router.post("/logout")
 async def logout(result = Depends(oauth2.expire_token)):
     return result
+
+
+

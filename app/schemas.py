@@ -29,7 +29,7 @@ class Post_users(BaseModel):
 
 class Login_details(BaseModel):
     email:EmailStr
-    password:str=Field(min_length=8, max_length=64)
+    password:str
 
 
 class Token(BaseModel):
@@ -128,8 +128,6 @@ class ForgetPassword(BaseModel):
 
 
 class ResetPassword(BaseModel):
-    email:EmailStr
-    token:str
     new_password:str
 
 
