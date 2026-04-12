@@ -22,9 +22,12 @@ async def user_login(login_details:OAuth2PasswordRequestForm=Depends(),db:Sessio
     if not utils.verify(login_details.password,data.password):
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,detail="credential not found")
     access_token=oauth2.create_access_token(data={"user_id":data.id})
+    refresh_token=oauth2.create_refresh_token(data={"user_id":data.id})
 
     return {
+        "status":"login successful",
         "access_token":access_token,
+        "refresh_token":refresh_token,
         "token_type":"bearer"
     }
 

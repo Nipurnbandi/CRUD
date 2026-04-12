@@ -13,6 +13,7 @@ oauth_schema=OAuth2PasswordBearer(tokenUrl="login")
 SECRET_KEY = config.settings.secret_key
 ALGORITHM = config.settings.algorithm
 ACCESS_TOKEN_EXPIRE_MINUTES = config.settings.access_token_expire_minutes
+REFRESH_TOKEN_EXPIRE_MINUTES = config.settings.refresh_token_expire_minutes
 
 expired_tokens=set()
 
@@ -23,6 +24,12 @@ def create_access_token(data:dict):
     encoded_jwt=jwt.encode(to_encode,SECRET_KEY,algorithm=ALGORITHM)
     return encoded_jwt
 
+def create_refresh_token(data:dict):
+    to_encode=data.copy()
+    expire=datetime.datetime.utcnow()+datetime.timedelta(days=REFRESH_TOKEN_EXPIRE_MINUTES)
+    to_encode.update({"exp":expire})
+    encoded_jwt=jwt.encode(to_encode,SECRET_KEY,algorithm=ALGORITHM)
+    return encoded_jwt
 
 def verify_access_token(token: str, credential_exception):
     try:
