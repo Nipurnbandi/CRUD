@@ -60,3 +60,22 @@ class EmailVerify(Base):
     email = Column(String, index=True)
     token = Column(String, unique=True)
     expires_at = Column(DateTime(timezone=True))    
+
+
+class RefreshToken(Base):
+    __tablename__ = "refresh_tokens"
+
+    id = Column(Integer, primary_key=True)
+    user_id = Column(Integer, ForeignKey("users.id"))
+    token = Column(String, unique=True, index=True)
+    is_revoked = Column(Boolean, default=False)
+    expires_at = Column(DateTime)
+    created_at = Column(DateTime, server_default=text('now()'),nullable=False)
+
+
+
+
+
+
+
+
