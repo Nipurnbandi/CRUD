@@ -1,4 +1,4 @@
-from .database import Base
+from app.core.database import Base
 from sqlalchemy import Column,Integer,String,Boolean,ForeignKey,DateTime
 from sqlalchemy.sql.sqltypes import TIMESTAMP
 from sqlalchemy.sql.expression import text

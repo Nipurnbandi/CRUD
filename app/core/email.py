@@ -1,7 +1,7 @@
 
 from email.message import EmailMessage
 import aiosmtplib
-from . import models
+from .. import models
 from fastapi import HTTPException
 from .config import settings
 import secrets

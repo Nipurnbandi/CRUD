@@ -1,12 +1,12 @@
 from jose import jwt,JWTError,ExpiredSignatureError
 import datetime 
 import secrets
-from . import schemas
+from app.schemas.auth import Token_data
 from fastapi import Depends,HTTPException,status
 from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.orm import Session
 from .database import get_db
-from . import models
+from .. import models
 from . import config
 
 oauth_schema=OAuth2PasswordBearer(tokenUrl="login")
@@ -37,7 +37,7 @@ def verify_access_token(token: str, credential_exception):
         if user_id is None or token in expired_tokens:
             raise credential_exception
 
-        token_data = schemas.Token_data(id=user_id)
+        token_data = Token_data(id=user_id)
 
     except ExpiredSignatureError:
         raise HTTPException(
