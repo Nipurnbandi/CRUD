@@ -21,7 +21,7 @@ class CommentMeta(BaseModel):
 
 class FeedItem(BaseModel):
     post: PostFeed
-    votes: int
+    votes: dict
     comment: CommentMeta
 
     class Config:
