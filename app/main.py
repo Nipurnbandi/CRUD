@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from .api import posts,users,auth,vote,comment,follow
+from .api import posts,users,auth,vote,comment,follow,feed
 from . import models
 from .core.database import engine 
 from fastapi.middleware.cors import CORSMiddleware
@@ -31,5 +31,6 @@ app.include_router(auth.router)
 app.include_router(vote.router)
 app.include_router(comment.router)
 app.include_router(follow.router)
+app.include_router(feed.router)
 
 
